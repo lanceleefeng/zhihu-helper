@@ -44,7 +44,7 @@ function delMessageNum()
   if(patternReg.test(document.title)){
     console.log('Original title: ' + document.title);
     document.title = document.title.replace(patternReg, '');
-    console.log('new title: ' + document.title);
+    console.log('New title: ' + document.title);
   }
 
 }
