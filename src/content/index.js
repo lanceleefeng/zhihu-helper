@@ -15,6 +15,7 @@ function injectJS() {
   document.addEventListener("readystatechange", () => {
     const injectPath = "inject.js";
     const temp = document.createElement("script");
+    console.log(injectPath);
 
     temp.setAttribute("type", "text/javascript");
     // 获得的地址类似：chrome-extension://ihcokhadfjfchaeagdoclpnjdiokfakg/js/inject.js
