@@ -1,10 +1,25 @@
 <template>
   <div class="greet">
     hello
+    <div class="show-button-container">
+      <button type="button" class="show" @click="showRecent">打印 recent</button>
+      <button type="button" class="show" @click="showHistory">打印 history</button>
+      <button type="button" class="show" @click="showAll">打印 all</button>
+    </div>
+
+    <div class="clear-button-container">
+      <button type="button" class="clear clear-recent" @click="clearRecent">清除 recent</button>
+      <button type="button" class="clear clear-history" @click="clearHistory">清除 history</button>
+      <button type="button" class="clear clear-all" @click="clearAll">清除 all</button>
+    </div>
+
   </div>
 </template>
 
 <script>
+
+import { mapMutations, mapActions } from 'vuex';
+
 export default {
   name: "App",
 
@@ -12,6 +27,8 @@ export default {
 
   data() {
     return {
+      timer: null,
+      timerInterval: 3000,
       type: null,
       urlType: null,
       intersectionObserver: null,
@@ -64,7 +81,9 @@ export default {
       },
 
       // thresholdNum: 20,
-      thresholdNum: 100,
+      thresholdNum: 25,
+      // thresholdNum: 50,
+      // thresholdNum: 100,
       observerOptions: {}
 
     };
@@ -87,7 +106,24 @@ export default {
     // 首页上回答、问题、文章需要用定时器不断检查
 
     // 也有监控 DOM 树是否变化的接口，可以代替定时检查
+    ...mapMutations({
+      addRecent: "addRecent"
+    }),
+    ...mapActions({
+      // addHistory: "addHistory",
+      loadRecent: "loadRecent",
 
+      showRecent: "showRecent",
+      showHistory: "showHistory",
+      showAll: "showAll",
+
+      clearRecent: "clearRecent",
+      clearHistory: "clearHistory",
+      clearAll: "clearAll"
+    }),
+    flushCache(){
+      this.$store.dispatch("flush");
+    },
     createObserver(){
 
       this.createIntersectionObserver();
@@ -374,12 +410,16 @@ export default {
       entries.forEach((item) => {
         // console.log(item);
         if (item.isIntersecting && item.intersectionRatio >= minRatio) {
-          that.addHistory(item.target);
+          // that.addHistory(item.target);
+          // that.addRecent(item.target);
+          that.addTarget(item.target);
         }
       });
     },
 
-    addHistory(target){
+    // addHistory(target){
+    // addRecent(target){
+    addTarget(target){
       // console.log(target);
 
       let infoElement = target.querySelector(this.infoSelector);
@@ -413,7 +453,9 @@ export default {
 
       // console.log(result);
 
-      this.$store.commit("addHistory", result);
+      // this.$store.commit("addHistory", result);
+      // this.$store.dispatch("addHistory", result);
+      this.addRecent(result);
 
 
     },
@@ -429,12 +471,6 @@ export default {
       return thresholds;
     },
 
-    loadRecent(){
-      chrome.storage.local.get(["recent"], function(result){
-        console.log("data from chrome.storage.local:", result);
-      });
-    },
-
     setReleaseTime(){
     },
     getTime() {
@@ -446,18 +482,45 @@ export default {
   },
 
   mounted() {
+
     this.setReleaseTime();
 
     this.createObserver();
 
     this.loadRecent();
 
+    this.timer = setInterval(this.flushCache, this.timerInterval);
+
+  },
+  beforeDestroy(){
+    clearInterval(this.timer);
+    this.timer = null;
   }
 };
 </script>
 
 <style lang="scss" scoped>
+
 .greet {
   color: dodgerblue;
 }
+
+.show-button-container {
+  position: fixed;
+  top: 100px;
+  right: 350px;
+}
+
+.clear-button-container {
+  /*position: absolute;*/
+  position: fixed;
+  top: 150px;
+  right: 350px;
+}
+
+.show-button-container .show, .clear-button-container .clear{
+  display:inline-block;
+  margin-right: 1em;
+}
+
 </style>
