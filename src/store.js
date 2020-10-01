@@ -76,6 +76,7 @@ export default new Vuex.Store({
     history: [],
     option: {},
     batch: 100,
+    max: 1000,
     validTime: 1800000
   },
   getters: {},
@@ -326,7 +327,8 @@ export default new Vuex.Store({
 
         if (result.history) {
           let oldNum = result.history.length;
-          let i_start = oldNum + newNum - state.batch;
+          // let i_start = oldNum + newNum - state.batch;
+          let i_start = oldNum + newNum - state.max;
 
           let newHistory = [];
 

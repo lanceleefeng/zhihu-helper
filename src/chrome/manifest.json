@@ -5,7 +5,7 @@
 	"version": "1.0.0",
 	"browser_action": {
 		"default_title": "知乎助手",
-		"default_icon": "assets/logo.png",
+		"default_icon": "assets/zhihu-logo.png",
 		"default_popup": "popup.html"
 	},
 	"options_page": "option.html",
@@ -24,9 +24,9 @@
 		"scripts": ["js/background.js"]
 	},
 	"icons": {
-		"16": "assets/logo.png",
-		"48": "assets/logo.png",
-		"128": "assets/logo.png"
+		"16": "assets/zhihu-logo.png",
+		"48": "assets/zhihu-logo.png",
+		"128": "assets/zhihu-logo.png"
 	},
 	"content_security_policy": "script-src 'self' 'unsafe-eval'; object-src 'self'",
 	"content_scripts": [
