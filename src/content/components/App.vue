@@ -12,13 +12,11 @@
       <button type="button" class="clear clear-history" @click="clearHistory">清除 history</button>
       <button type="button" class="clear clear-all" @click="clearAll">清除 all</button>
     </div>
-
   </div>
 </template>
 
 <script>
-
-import { mapMutations, mapActions } from 'vuex';
+import { mapMutations, mapActions } from "vuex";
 
 export default {
   name: "App",
@@ -85,15 +83,14 @@ export default {
       // thresholdNum: 50,
       // thresholdNum: 100,
       observerOptions: {}
-
     };
   },
 
   computed: {
-    indexInnerContainerSelector: function () {
+    indexInnerContainerSelector: function() {
       return this.indexContainerSelector + this.indexContainerSub;
     },
-    actualTargetSelector: function () {
+    actualTargetSelector: function() {
       let index = this.indexType ? this.indexType : this.urlType;
       let selector = this.targetSelector[index];
       console.log("actual target selector:", selector);
@@ -102,7 +99,6 @@ export default {
   },
 
   methods: {
-
     // 首页上回答、问题、文章需要用定时器不断检查
 
     // 也有监控 DOM 树是否变化的接口，可以代替定时检查
@@ -112,6 +108,8 @@ export default {
     ...mapActions({
       // addHistory: "addHistory",
       loadRecent: "loadRecent",
+      // loadRecent,
+      // "loadRecent",
 
       showRecent: "showRecent",
       showHistory: "showHistory",
@@ -121,11 +119,10 @@ export default {
       clearHistory: "clearHistory",
       clearAll: "clearAll"
     }),
-    flushCache(){
+    flushCache() {
       this.$store.dispatch("flush");
     },
-    createObserver(){
-
+    createObserver() {
       this.createIntersectionObserver();
 
       let urlType = this.detectUrlType();
@@ -140,13 +137,10 @@ export default {
         this.createIndexContainerDomObserver();
         this.observeInitial();
       } else if (urlType === "question") {
-
         // this.createIntersectionObserver();
         this.observeInitial();
 
         this.createDomObserver();
-
-
       } else if (urlType === "answer") {
         // 回答的页面结构与问题相似
         // 指定的回答也是用了同样的css class
@@ -159,12 +153,11 @@ export default {
         this.observeInitial();
 
         this.createDomObserver();
-
       }
-
     },
     createIndexContainerDomObserver() {
-      let containerElement = document.querySelector(this.indexContainerSelector);
+      let selector = this.indexContainerSelector;
+      let containerElement = document.querySelector(selector);
       console.log(containerElement);
 
       if (!containerElement) return;
@@ -175,13 +168,12 @@ export default {
 
       let options = { childList: true, attributes: false, subtree: true };
 
-      this.indexContainerDomObserver = new MutationObserver(this.handleIndexContainerDomMutation);
+      let handle = this.handleIndexContainerDomMutation;
+      this.indexContainerDomObserver = new MutationObserver(handle);
       this.indexContainerDomObserver.observe(containerElement, options);
-
     },
 
-    handleIndexContainerDomMutation(mutationList){
-
+    handleIndexContainerDomMutation(mutationList) {
       // 区分首页类型：推荐、关注、热榜；
       this.detectIndexType();
 
@@ -198,26 +190,27 @@ export default {
       let targetSelector = this.targetSelector[this.indexType];
       let targetCssClass = targetSelector.replace(".", "");
 
-      mutationList.forEach((item) => {
+      mutationList.forEach(item => {
         // addedNodes.concat(item.addedNodes);
-        item.addedNodes.forEach((nodeItem) => {
+        item.addedNodes.forEach(nodeItem => {
           // addedNodes.push(nodeItem);
 
           // if (nodeItem.classList.contains(targetSelector)) {
-          if (nodeItem.classList && nodeItem.classList.contains(targetCssClass)) {
+          // if (nodeItem.classList && nodeItem.classList.contains(targetCssClass)) {
+          if (
+            nodeItem.classList &&
+            nodeItem.classList.contains(targetCssClass)
+          ) {
             addedNodes.push(nodeItem);
           }
-
         });
       });
 
       console.log("新增 intersection 监控：" + addedNodes.length + "个");
       this.observe(addedNodes);
-
     },
 
     detectUrlType() {
-
       let type;
 
       console.log(document.location.href);
@@ -237,7 +230,6 @@ export default {
       } else if (url === "hot") {
         type = "hot";
       } else {
-
         let part1 = urlParts[0];
 
         if (part1 === "question") {
@@ -252,19 +244,17 @@ export default {
           } else {
             type = "question";
           }
-
         } else if (part1 === "room") {
           type = "room";
         }
-
       }
 
       console.log("url type:", type);
       return type;
-
     },
     detectIndexType() {
-      let innerContainer = document.querySelector(this.indexInnerContainerSelector);
+      let selector = this.indexInnerContainerSelector;
+      let innerContainer = document.querySelector(selector);
 
       if (!innerContainer) return;
 
@@ -273,7 +263,9 @@ export default {
       // console.log(innerContainer.classList);
 
       let indexType;
-      for (let i in this.indexTypes) {
+      let num = this.indexTypes.length;
+      // for (let i in this.indexTypes) {
+      for (let i = 0; i < num; i++) {
         let type = this.indexTypes[i];
         let typeCssClass = this.indexTypePrefix + type;
 
@@ -286,11 +278,9 @@ export default {
       if (indexType) {
         this.indexType = indexType;
       }
-
     },
 
     createIntersectionObserver() {
-
       // let intersectionObserver;
       let thresholds = this.getThreshold();
 
@@ -306,13 +296,13 @@ export default {
         threshold: thresholds
       };
 
-      this.intersectionObserver = new IntersectionObserver(this.handleIntersect, this.observerOptions);
-
+      this.intersectionObserver = new IntersectionObserver(
+        this.handleIntersect,
+        this.observerOptions
+      );
     },
 
-    createDomObserver(){
-
-
+    createDomObserver() {
       // 问题：
       // 问题页面、首页都有内容，而回答页面在”更多“中的两个回答，初始状态是没有的，无法通过向上查找的方式找到containerElement
 
@@ -334,34 +324,33 @@ export default {
         // containerElement = target;
         containerElement = target.parentNode;
       } else {
-        containerElement = document.querySelector(this.containerSelector[this.urlType]);
+        let selector = this.containerSelector[this.urlType];
+        containerElement = document.querySelector(selector);
       }
 
-      console.log('containerElement:', containerElement);
+      console.log("containerElement:", containerElement);
       let options = { childList: true, subtree: false, attributes: false };
 
       this.domObserver = new MutationObserver(this.handleDomMutation);
       this.domObserver.observe(containerElement, options);
-
     },
 
-    observeInitial(){
+    observeInitial() {
       // let items = document.querySelectorAll(this.targetSelector[this.type]);
       let items = document.querySelectorAll(this.actualTargetSelector);
       console.log("initial observe:", items);
       this.observe(items);
     },
-    observe(targets){
+    observe(targets) {
       let that = this;
 
-      targets.forEach((item) => {
+      targets.forEach(item => {
         that.intersectionObserver.observe(item);
       });
     },
 
     // handleDomMutation(mutationList, observer){
-    handleDomMutation(mutationList){
-
+    handleDomMutation(mutationList) {
       // console.log(observer);
       console.log("new list items: ");
       console.log(mutationList);
@@ -371,9 +360,9 @@ export default {
       let addedNodes = [];
 
       if (this.urlType !== "answer") {
-        mutationList.forEach((item) => {
+        mutationList.forEach(item => {
           // addedNodes.concat(item.addedNodes);
-          item.addedNodes.forEach((nodeItem) => {
+          item.addedNodes.forEach(nodeItem => {
             addedNodes.push(nodeItem);
           });
         });
@@ -383,7 +372,6 @@ export default {
         if (element.classList.contains(this.moreAnswerCssClass)) {
           addedNodes = element.querySelectorAll(this.moreAnswerSelector);
         }
-
       }
 
       console.log("新增 intersection 监控：" + addedNodes.length + "个");
@@ -395,8 +383,7 @@ export default {
     },
 
     // handleIntersect(entries, observer){
-    handleIntersect(entries){
-
+    handleIntersect(entries) {
       // entries 对于某个被监控的元素只有一个记录
       // 有多个记录是因为多个元素的 threshold 被触发了
 
@@ -407,7 +394,7 @@ export default {
       let minRatio = this.minRatio;
 
       // 收集：链接类型、链接、作者、当前时间
-      entries.forEach((item) => {
+      entries.forEach(item => {
         // console.log(item);
         if (item.isIntersecting && item.intersectionRatio >= minRatio) {
           // that.addHistory(item.target);
@@ -419,7 +406,7 @@ export default {
 
     // addHistory(target){
     // addRecent(target){
-    addTarget(target){
+    addTarget(target) {
       // console.log(target);
 
       let infoElement = target.querySelector(this.infoSelector);
@@ -456,10 +443,8 @@ export default {
       // this.$store.commit("addHistory", result);
       // this.$store.dispatch("addHistory", result);
       this.addRecent(result);
-
-
     },
-    getThreshold(){
+    getThreshold() {
       let thresholds = [];
 
       thresholds.push(0);
@@ -471,8 +456,8 @@ export default {
       return thresholds;
     },
 
-    setReleaseTime(){
-    },
+    // setReleaseTime() {
+    // },
     getTime() {
       let timeElement = document.querySelector(".ContentItem-time");
       let time = timeElement.innerHTML;
@@ -482,17 +467,15 @@ export default {
   },
 
   mounted() {
-
-    this.setReleaseTime();
+    // this.setReleaseTime();
 
     this.createObserver();
 
     this.loadRecent();
 
     this.timer = setInterval(this.flushCache, this.timerInterval);
-
   },
-  beforeDestroy(){
+  beforeDestroy() {
     clearInterval(this.timer);
     this.timer = null;
   }
@@ -500,7 +483,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-
 .greet {
   color: dodgerblue;
 }
@@ -518,9 +500,9 @@ export default {
   right: 350px;
 }
 
-.show-button-container .show, .clear-button-container .clear{
-  display:inline-block;
+.show-button-container .show,
+.clear-button-container .clear {
+  display: inline-block;
   margin-right: 1em;
 }
-
 </style>
