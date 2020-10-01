@@ -204,7 +204,7 @@ export default {
           // addedNodes.push(nodeItem);
 
           // if (nodeItem.classList.contains(targetSelector)) {
-          if (nodeItem.classList.contains(targetCssClass)) {
+          if (nodeItem.classList && nodeItem.classList.contains(targetCssClass)) {
             addedNodes.push(nodeItem);
           }
 
