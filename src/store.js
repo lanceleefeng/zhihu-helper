@@ -16,7 +16,7 @@ function timeStringToDate(rows) {
       newItem.time = new Date(item.time);
     }
     transformed.push(newItem);
-  })
+  });
   console.log("transformed:", transformed);
   return transformed;
 }
@@ -29,7 +29,7 @@ function dateToTimeString(rows) {
   rows.forEach(item => {
     let newItem = item;
     // newItem.time = JSON.parse(item.time);
-    if ((typeof item.time) === "object") {
+    if (typeof item.time === "object") {
       newItem.time = item.time.toJSON();
     }
     transformed.push(newItem);
@@ -75,11 +75,29 @@ export default new Vuex.Store({
     recent: [],
     history: [],
     option: {},
+    pageSize: 20,
     batch: 100,
     max: 1000,
     validTime: 1800000
   },
-  getters: {},
+  getters: {
+    paginator: (state) => (n) => {
+      console.log(n, state.history, state.history.length);
+
+      n = n <= 0 ? 1 : n;
+      let end = n * state.pageSize;
+      let start = end - state.pageSize;
+
+      start = start <= 0 ? 0 : start;
+      if (start >= state.history.length) {
+        return [];
+      }
+
+      let items = state.history.slice(start, end);
+      console.log(items);
+      return items;
+    }
+  },
   mutations: {
 
     addRecent(state, data){
@@ -173,7 +191,6 @@ export default new Vuex.Store({
 
         let newRecent = [];
         data.forEach(item => {
-
           // 时间对象相减得到的是毫秒数
           let timePassed = currentDate - item.time;
           // console.log("time:", currentDate, item.time);
@@ -181,16 +198,19 @@ export default new Vuex.Store({
 
           // if (Math.floor(Math.random() * 10000) % 2 === 0) {
           // if(false){
-          if (timePassed <= validTime){
+          if (timePassed <= validTime) {
             newRecent.push(item);
-          };
+          }
 
         });
         state.recent = newRecent;
       }
     },
-    addHistory(state, data){
+    addHistory(state, data) {
       console.log(state, data);
+    },
+    setHistory(state, data) {
+      state.history = data;
     }
   },
   actions: {
@@ -201,12 +221,10 @@ export default new Vuex.Store({
         commit("resetCache");
         await dispatch("addRecentInStorage", cache);
       }
-
     },
 
     // async addHistory({ dispatch, state }, data){
     async addRecentInStorage({ dispatch, state }, data) {
-
       // let currentDate = new Date();
       let validTime = state.validTime;
 
@@ -380,6 +398,18 @@ export default new Vuex.Store({
         commit("setRecent", recent);
       });
     },
+    async loadHistory( { commit }){
+      await chrome.storage.local.get("history", function(result) {
+        console.log("data from chrome.storage.local:", result.history);
+        let history = timeStringToDate(result.history);
+        // console.log(recent);
+        // commit('setRecentInitial', recent);
+        // if (result.recent) {
+        //   commit("setRecent", recent);
+        // }
+        commit("setHistory", history);
+      });
+    },
     showRecent({ state }) {
       console.log("显示 recent:");
       let key = "recent";
@@ -415,7 +445,6 @@ export default new Vuex.Store({
       dispatch("clearRecent");
       dispatch("clearHistory");
     }
-
   }
 
 });

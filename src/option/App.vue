@@ -1,9 +1,6 @@
 <template>
   <div>
-    <h2>Options</h2>
-    hello
-    <h3>浏览记录2</h3>
-
+    <router-view></router-view>
   </div>
 </template>
 
@@ -21,6 +18,8 @@ export default {
 
   computed: {},
 
-  mounted() {}
+  mounted() {
+    console.log("in App.vue");
+  }
 };
 </script>

@@ -1,6 +1,6 @@
 <template>
   <div>
-    <h2>Options</h2>
+    <h2>设置</h2>
     hello
     <h3>浏览记录2</h3>
 
@@ -9,7 +9,7 @@
 
 <script>
 export default {
-  name: "App",
+  name: "Settings",
 
   components: {},
 
