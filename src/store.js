@@ -511,15 +511,15 @@ export default new Vuex.Store({
           dispatch("loadHistory");
           let log = "prev num: " + state.prevRecentNum + ", current num: " + state.recentNum;
           console.log(log);
-
         });
       } else {
-        await dispatch("loadRecent");
+        let ret = await dispatch("loadRecent");
         let log = "prev num: " + state.prevRecentNum + ", current num: " + state.recentNum;
         console.log(log);
         if (state.prevRecentNum > state.recentNum) {
-          await dispatch("loadHistory");
+          ret = await dispatch("loadHistory");
         }
+        return ret
       }
     },
     clearRecent({ commit }) {

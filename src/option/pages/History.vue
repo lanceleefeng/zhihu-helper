@@ -37,6 +37,7 @@ export default {
 
   methods: {
     ...mapActions({
+      loadAll: "loadAll",
       loadRecent: "loadRecent",
       loadHistory: "loadHistory"
     }),
@@ -62,9 +63,12 @@ export default {
   },
 
   mounted() {
-    this.loadRecent();
-    this.loadHistory();
-    this.loadPage(1);
+    // this.loadRecent();
+    // this.loadHistory();
+    this.loadAll().then(() => {
+      this.loadPage(this.page);
+    });
+    // this.loadPage(this.page);
   }
 };
 </script>

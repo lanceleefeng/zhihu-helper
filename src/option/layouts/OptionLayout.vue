@@ -33,7 +33,7 @@ export default {
   computed: {},
 
   mounted() {
-    this.loadAll();
+    // this.loadAll();
 
     this.timer = setInterval(this.loadAll, this.timerInterval);
   },
