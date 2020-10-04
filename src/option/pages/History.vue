@@ -4,7 +4,7 @@
     hello
     <h3>浏览记录2</h3>
 
-    <div v-for="item in items" :key="item.type + item.itemId">
+    <div v-for="item in items" :key="item.type + item.itemId + item.time.toJSON()">
       {{ item.title }} - {{ item.author }}
     </div>
     <button type="button" @click="nextPage">下一页</button>
@@ -16,9 +16,7 @@ import { mapGetters, mapActions } from "vuex";
 
 export default {
   name: "History",
-  components: {
-
-  },
+  components: {},
 
   data() {
     return {

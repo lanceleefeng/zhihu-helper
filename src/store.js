@@ -1,6 +1,7 @@
 
 import Vue from "vue";
 import Vuex from "vuex";
+import "chrome-storage-promise";
 
 Vue.use(Vuex);
 
@@ -12,7 +13,7 @@ function timeStringToDate(rows) {
   rows.forEach(item => {
     let newItem = item;
     // newItem.time = JSON.parse(item.time);
-    if ((typeof item.time) === "string"){
+    if (typeof item.time === "string") {
       newItem.time = new Date(item.time);
     }
     transformed.push(newItem);
@@ -68,12 +69,16 @@ function filterNewRecent(rows, oldRows, validTime) {
   return newRecent;
 }
 
-
 export default new Vuex.Store({
   state: {
     cache: [],
+    filteredRecent: [],
+    prevRecentNum: 0,
+    recentNum: 0,
     recent: [],
     history: [],
+    optionInitialized: false,
+    // all: [],
     option: {},
     pageSize: 20,
     batch: 100,
@@ -81,30 +86,41 @@ export default new Vuex.Store({
     validTime: 1800000
   },
   getters: {
-    paginator: (state) => (n) => {
-      console.log(n, state.history, state.history.length);
+    all: state => {
+      return state.history.concat(state.recent);
+    },
+    paginator: (state, getters) => n => {
+      // console.log(n, state.history, state.history.length);
+      // console.log(n, state.all, state.all.length);
+
+      let all = getters.all;
+      let allNum = all.length;
+
+      console.log(n, all, all.length);
 
       n = n <= 0 ? 1 : n;
       let end = n * state.pageSize;
       let start = end - state.pageSize;
 
       start = start <= 0 ? 0 : start;
-      if (start >= state.history.length) {
+      if (start >= allNum) {
         return [];
       }
 
-      let items = state.history.slice(start, end);
+      let items = all.slice(start, end);
       console.log(items);
       return items;
     }
   },
   mutations: {
-
-    addRecent(state, data){
+    setOptionInitialized(state, data) {
+      state.optionInitialized = data;
+    },
+    addRecent(state, data) {
       console.log("recent in state:", state.recent);
       console.log("new data:", data);
 
-      let newRecent = [];
+      // let newRecent = [];
       // let newHistory = [];
 
       // console.log("old recent:", state.recent);
@@ -114,45 +130,42 @@ export default new Vuex.Store({
       let validTime = state.validTime;
       // let batch = state.batch;
 
-      for (let i in state.recent) {
-        let item = state.recent[i];
-        // console.log("item:", item);
+      let filteredRecent = state.filteredRecent;
+      let filteredNum = filteredRecent.length;
 
-        // if (item.itemId === data.itemId && item.type === data.type) {
-        if ((item.itemId === data.itemId) && (item.type === data.type)) {
-          // 时间对象相减得到的是毫秒数
-          let timePassed = currentDate - item.time;
-          console.log("timePassed:", timePassed);
-          console.log("current date:", currentDate, "item.time:", item.time);
-          // console.log("current date:", typeof currentDate, "item.time:", typeof item.time);
+      if (filteredNum > 0) {
+        for (let i = 0; i < filteredNum; i++) {
+          let item = filteredRecent[i];
+          if (item.itemId === data.itemId && item.type === data.type) {
+            // 时间对象相减得到的是毫秒数
+            let timePassed = currentDate - item.time;
+            console.log("timePassed:", timePassed);
+            console.log("current date:", currentDate, "item.time:", item.time);
+            // console.log("current date:", typeof currentDate, "item.time:", typeof item.time);
 
-          if (timePassed <= validTime) {
-            isInRecent = true;
-            break;
+            if (timePassed <= validTime) {
+              isInRecent = true;
+              break;
+            }
           }
         }
+
+        console.log("isInRecent:", isInRecent);
+        if (isInRecent) return;
       }
-      // console.log(":", );
-      console.log("isInRecent:", isInRecent);
-      if (isInRecent) return;
 
-      // 改为定时检查 cache 中的数量？
-      // 只要有，每3秒保存一次
+      // state.cache
 
-      state.cache.push(data);
+      // state.cache.push(data);
       // commit("addCache", data);
-
-      // state 中的 recent 和 storage 中的不同：
-
-      // state中的recent只有最近半个小时的
-      // storage中recent超过半小时的达到batch再保存到history中
+      this.commit("addCache", data);
 
       // if (state.recent) {
-      if (state.recent.length > 0) {
-        newRecent = state.recent;
-      }
+      // if (state.recent.length > 0) {
+      //   newRecent = state.recent;
+      // }
 
-      newRecent.push(data);
+      // newRecent.push(data);
 
       // state.recent = newRecent;
       // state.history.push(data);
@@ -164,7 +177,11 @@ export default new Vuex.Store({
       // this 是 Store 对象
       console.log("this in mutation function:", this);
       // this.setRecent(state, newRecent);
-      this.commit("setRecent", newRecent);
+      // this.commit("setRecent", newRecent);
+      // this.commit("setRecent", newRecent);
+      this.commit("addFilteredRecent", data);
+
+      // storage 相关的操作，都在 actions
 
       // return;
     },
@@ -172,17 +189,26 @@ export default new Vuex.Store({
     addCache(state, data) {
       state.cache.push(data);
     },
+    addFilteredRecent(state, data) {
+      state.filteredRecent.push(data);
+    },
 
     resetCache(state) {
       state.cache = [];
     },
+    resetFilteredRecent(state) {
+      state.filteredRecent = [];
+    },
     resetRecent(state) {
       state.recent = [];
     },
-    setRecent(state, data) {
+    resetHistory(state) {
+      state.history = [];
+    },
+    setFilteredRecent(state, data) {
       console.log("new recent:", data);
-      if (data) {
 
+      if (data) {
         let currentDate = new Date();
         let validTime = state.validTime;
 
@@ -203,7 +229,15 @@ export default new Vuex.Store({
           }
 
         });
-        state.recent = newRecent;
+        // state.recent = newRecent;
+        state.filteredRecent = newRecent;
+      }
+    },
+    setRecent(state, data) {
+      state.prevRecentNum = state.recent.length;
+      if (data) {
+        state.recent = data;
+        state.recentNum = state.recent.length;
       }
     },
     addHistory(state, data) {
@@ -263,7 +297,7 @@ export default new Vuex.Store({
       // */
 
       // await chrome.storage.local.get([keyRecent], function(result){
-      chrome.storage.local.get(keyRecent, function(result){
+      chrome.storage.local.get(keyRecent, function(result) {
         console.log(keyRecent + " from storage:", result[keyRecent]);
 
         console.log(
@@ -273,7 +307,6 @@ export default new Vuex.Store({
         );
 
         if (result[keyRecent]) {
-
           // 把新的recent写入到storage
 
           let oldRecent = timeStringToDate(result[keyRecent]);
@@ -286,7 +319,8 @@ export default new Vuex.Store({
           let remaining = [];
           let currentDate = new Date();
 
-          for(let i in oldRecent) {
+          let oldNum = oldRecent.length;
+          for(let i =0; i < oldNum; i++) {
 
             let item = oldRecent[i];
             let milliSeconds = currentDate - item.time;
@@ -311,8 +345,7 @@ export default new Vuex.Store({
               remaining = remaining.concat(newRecent);
             }
             dispatch("saveRecent", remaining);
-
-          }else{
+          } else {
             // if (!isInStorage) {
             if (newRecent.length > 0) {
               // 更新 recent
@@ -321,18 +354,15 @@ export default new Vuex.Store({
               dispatch("saveRecent", oldRecent);
             }
           }
-
         } else {
           // 更新 storage 中的 recent 改成单独的 action
           dispatch("saveRecent", data);
         }
       });
-
     },
 
     // async updateHistory({ dispatch, state }, data){
-    async addHistoryInStorage({ dispatch, state }, data){
-
+    async addHistoryInStorage({ dispatch, state }, data) {
       // 时间控制在30天内，数量1000条？
       // 1000条，又有两种：
       // 一种是严格的1000条，history、recent加起来1000；
@@ -340,7 +370,7 @@ export default new Vuex.Store({
 
       let newNum = data.length;
 
-      await chrome.storage.local.get(["history"], function(result){
+      await chrome.storage.local.get(["history"], function(result) {
         console.log("saved history: ", result.history);
 
         if (result.history) {
@@ -364,30 +394,94 @@ export default new Vuex.Store({
           dispatch("saveHistory", data);
         }
       });
-
     },
-    async saveHistory(context, data){
-
+    async saveHistory(context, data) {
       data = dateToTimeString(data);
 
-      await chrome.storage.local.set({ history: data }, function(){
+      await chrome.storage.local.set({ history: data }, function() {
         console.log("save history in storage.");
       });
     },
-    async saveRecent(context, recent){
-
+    async saveRecent(context, recent) {
       recent = dateToTimeString(recent);
 
       // chrome.storage.local.set({ recent: recent }, function(){
-      await chrome.storage.local.set({ recent: recent }, function(){
+      await chrome.storage.local.set({ recent: recent }, function() {
         console.log("save recent in storage.");
       });
     },
 
-    async loadRecent({ commit }) {
-      // 初始化时取出数据
+    async showRecent1({ state }) {
+      // 除了显示 storage 中的，还有 state.recent
 
-      await chrome.storage.local.get(["recent"], function(result) {
+      console.log("显示 recent:");
+      let key = "recent";
+      console.log(state[key]);
+      // let result = await chrome.storage.local.get(key, await function(result) {
+      let result = await chrome.storage.local.get(key, function(result) {
+        console.log(result[key]);
+      });
+      console.log("result of chrome.storage.local.get:", result);
+    },
+    async showHistory1() {
+      console.log("显示 history:");
+      let key = "history";
+      await chrome.storage.local.get(key, function(result) {
+        console.log(result[key]);
+      });
+    },
+    showRecent({ state }) {
+      // 除了显示 storage 中的，还有 state.recent
+
+      console.log("显示 recent:");
+      let key = "recent";
+      console.log(state[key]);
+
+      // 文件前面要加一句：
+      // import "chrome-storage-promise";
+
+      // console.log(chrome);
+      console.log(chrome.storage);
+
+      // 返回结果并没有改变 chrome.storage.local.get 原本的结构，
+      // 仍然要用 key 从 result 中获取数据
+
+      // chrome.storage.promise.local.get(key).then(items => {
+      //   console.log(items);
+      // });
+
+      return chrome.storage.promise.local.get(key).then(result => {
+        console.log(key + " from storage:", result[key]);
+      });
+    },
+    showHistory() {
+      console.log("显示 history:");
+      let key = "history";
+      return chrome.storage.promise.local.get(key).then(result => {
+        console.log(key + " from storage:", result[key]);
+      });
+    },
+    // showAll({ dispatch }) {
+    async showAll({ dispatch }) {
+      // 使用 Promise 之后，可以用 await 实现顺序执行
+      // dispatch("showRecent");
+      // dispatch("showHistory");
+
+      await dispatch("showRecent");
+      await dispatch("showHistory");
+
+      // dispatch("showRecent").then(() => {
+      //   dispatch("showHistory");
+      // });
+    },
+
+    loadRecent({ commit }) {
+      // 初始化时取出数据
+      console.log("loadRecent");
+
+      // await chrome.storage.local.get(["recent"], await function(result) {
+      // await chrome.storage.local.get(["recent"], function(result) {
+      return chrome.storage.promise.local.get(["recent"]).then(result => {
         console.log("data from chrome.storage.local:", result.recent);
         let recent = timeStringToDate(result.recent);
         // console.log(recent);
@@ -395,40 +489,38 @@ export default new Vuex.Store({
         // if (result.recent) {
         //   commit("setRecent", recent);
         // }
+        commit("setFilteredRecent", recent);
         commit("setRecent", recent);
       });
     },
-    async loadHistory( { commit }){
-      await chrome.storage.local.get("history", function(result) {
+    loadHistory({ commit }) {
+      console.log("loadHistory");
+
+      // return chrome.storage.promise.local.get("history", function(result) {
+      return chrome.storage.promise.local.get("history").then(result => {
         console.log("data from chrome.storage.local:", result.history);
         let history = timeStringToDate(result.history);
-        // console.log(recent);
-        // commit('setRecentInitial', recent);
-        // if (result.recent) {
-        //   commit("setRecent", recent);
-        // }
         commit("setHistory", history);
       });
     },
-    showRecent({ state }) {
-      console.log("显示 recent:");
-      let key = "recent";
-      // 除了显示 storage 中的，还有 state.recent
-      console.log(state[key]);
-      chrome.storage.local.get(key, function(result) {
-        console.log(result[key]);
-      });
-    },
-    showHistory() {
-      console.log("显示 history:");
-      let key = "history";
-      chrome.storage.local.get(key, function(result) {
-        console.log(result[key]);
-      });
-    },
-    showAll({ dispatch }) {
-      dispatch("showRecent");
-      dispatch("showHistory");
+    async loadAll({ state, commit, dispatch }) {
+      // todo: 后面要添加选项的初始化
+      if (!state.optionInitialized) {
+        commit("setOptionInitialized", true);
+        return dispatch("loadRecent").then(() => {
+          dispatch("loadHistory");
+          let log = "prev num: " + state.prevRecentNum + ", current num: " + state.recentNum;
+          console.log(log);
+
+        });
+      } else {
+        await dispatch("loadRecent");
+        let log = "prev num: " + state.prevRecentNum + ", current num: " + state.recentNum;
+        console.log(log);
+        if (state.prevRecentNum > state.recentNum) {
+          await dispatch("loadHistory");
+        }
+      }
     },
     clearRecent({ commit }) {
       console.log("清除 recent");
@@ -441,10 +533,9 @@ export default new Vuex.Store({
       console.log("清除 history");
       chrome.storage.local.set({ history: null });
     },
-    clearAll({ dispatch }) {
-      dispatch("clearRecent");
-      dispatch("clearHistory");
+    async clearAll({ dispatch }) {
+      await dispatch("clearRecent");
+      await dispatch("clearHistory");
     }
   }
-
 });

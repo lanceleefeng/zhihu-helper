@@ -12,6 +12,7 @@
   },
   "dependencies": {
     "axios": "^0.19.2",
+    "chrome-storage-promise": "^0.1.0",
     "core-js": "^2.6.5",
     "vue": "^2.6.10",
     "vue-router": "^3.4.5",
