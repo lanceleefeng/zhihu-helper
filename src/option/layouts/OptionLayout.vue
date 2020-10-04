@@ -3,8 +3,8 @@
     <h2>Option Layout</h2>
     hello
     <h3>浏览记录2</h3>
-    <router-link to="/history">浏览记录</router-link>
-    <router-link to="/settings">设置</router-link>
+    <router-link class="menu-item" to="/history">浏览记录</router-link>
+    <router-link class="menu-item" to="/settings">设置</router-link>
     <router-view></router-view>
   </div>
 </template>
@@ -43,3 +43,12 @@ export default {
   }
 };
 </script>
+
+<style lang="scss" scoped>
+/*.menu-item:nth-last-child {*/
+.menu-item {
+  display: inline-block;
+  margin-right:1rem;
+}
+
+</style>

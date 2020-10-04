@@ -87,7 +87,7 @@ export default new Vuex.Store({
   },
   getters: {
     all: state => {
-      return state.history.concat(state.recent);
+      return state.history.concat(state.recent).reverse();
     },
     paginator: (state, getters) => n => {
       // console.log(n, state.history, state.history.length);
