@@ -1,8 +1,6 @@
 <template>
   <div>
     <h2>浏览记录</h2>
-    hello
-    <h3>浏览记录2</h3>
 
     <div v-for="item in items" :key="item.type + item.itemId + item.time.toJSON()">
       <a :href="getUrl(item)" target="_blank">{{ item.type }}：{{ item.title }} - {{ item.author }}</a>

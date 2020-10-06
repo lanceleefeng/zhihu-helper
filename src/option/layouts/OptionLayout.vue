@@ -1,8 +1,6 @@
 <template>
   <div>
-    <h2>Option Layout</h2>
-    hello
-    <h3>浏览记录2</h3>
+    <h2>知乎助手</h2>
     <router-link class="menu-item" to="/history">浏览记录</router-link>
     <router-link class="menu-item" to="/settings">设置</router-link>
     <router-view></router-view>
