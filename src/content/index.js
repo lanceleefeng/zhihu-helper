@@ -1,12 +1,14 @@
 import Vue from "vue";
-import App from "./components/App.vue";
+import App from "./components/Content.vue";
 import insert from "@/utils/insert";
-import stroe from "@/mixins/store";
+import store from "@/mixins/store";
+import functions from "@/utils/functions";
 
 // 注入js到页面
 injectJS();
 
-Vue.mixin(stroe);
+Vue.use(functions);
+Vue.mixin(store);
 
 // 插入组件到页面中
 insert(App);
@@ -24,12 +26,12 @@ function injectJS() {
   });
 }
 
-console.log('in content/index.js');
+console.log("in content/index.js");
 
 
 // 去掉标题中的消息数提示
 
-// document.title = '(3 条消息)为何中国不学当年日本那样主动刺破房地产泡沫？ - 知乎  ';
+// document.title = "(3 条消息)为何中国不学当年日本那样主动刺破房地产泡沫？ - 知乎  ";
 
 let config = {
   pattern: /\(\d+\+?\s*条消息\)/,
@@ -43,9 +45,9 @@ function delMessageNum()
 {
 
   if(patternReg.test(document.title)){
-    console.log('Original title: ' + document.title);
-    document.title = document.title.replace(patternReg, '');
-    console.log('New title: ' + document.title);
+    console.log("Original title: " + document.title);
+    document.title = document.title.replace(patternReg, "");
+    console.log("New title: " + document.title);
   }
 
 }

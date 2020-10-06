@@ -44,7 +44,8 @@
 		},
 		{
 			"matches": [
-				"https://zhuanlan.zhihu.com/p/*"
+				"https://zhuanlan.zhihu.com/p/*",
+				"https://www.zhihu.com/zvideo/*"
 			],
 			"css": ["css/zhuanlan_content.css"],
 			"js": ["js/zhuanlan_content.js"],

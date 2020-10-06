@@ -5,7 +5,7 @@
     <h3>浏览记录2</h3>
 
     <div v-for="item in items" :key="item.type + item.itemId + item.time.toJSON()">
-      <a :href="getUrl(item)" target="_blank">{{ item.title }} - {{ item.author }}</a>
+      <a :href="getUrl(item)" target="_blank">{{ item.type }}：{{ item.title }} - {{ item.author }}</a>
     </div>
     <button type="button" @click="prevPage">上一页</button>
     <button type="button" @click="nextPage">下一页</button>
@@ -22,7 +22,10 @@ export default {
   data() {
     return {
       urlPattern: {
-        answer: "https://www.zhihu.com/answer/"
+        answer: "https://www.zhihu.com/answer/",
+        question: "https://www.zhihu.com/question/",
+        article: "https://zhuanlan.zhihu.com/p/",
+        zvideo: "https://www.zhihu.com/zvideo/"
       },
       page: 1,
       items: []
@@ -43,9 +46,10 @@ export default {
     }),
     getUrl(item) {
       let url;
-      if (item.type === "answer") {
-        url = this.urlPattern[item.type] + item.itemId;
-      }
+      // if (item.type === "answer") {
+      //   url = this.urlPattern[item.type] + item.itemId;
+      // }
+      url = this.urlPattern[item.type] + item.itemId;
       return url;
     },
     loadPage(n) {

@@ -125,7 +125,8 @@ export default {
     createObserver() {
       this.createIntersectionObserver();
 
-      let urlType = this.detectUrlType();
+      // let urlType = this.getUrlType();
+      let urlType = this.$getUrlType();
 
       if (!urlType) return;
 
@@ -210,48 +211,6 @@ export default {
       this.observe(addedNodes);
     },
 
-    detectUrlType() {
-      let type;
-
-      console.log(document.location.href);
-      let url = document.location.href;
-
-      let index_url = "https://www.zhihu.com/";
-
-      url = url.replace(index_url, "");
-
-      let urlParts = url.split("/");
-
-      if (url === "") {
-        // type = "index";
-        type = "recommend";
-      } else if (url === "follow") {
-        type = "follow";
-      } else if (url === "hot") {
-        type = "hot";
-      } else {
-        let part1 = urlParts[0];
-
-        if (part1 === "question") {
-          if (2 in urlParts) {
-            let sub = urlParts[2];
-
-            if (sub === "answer") {
-              type = "answer";
-            } else if (sub === "p") {
-              type = "article";
-            }
-          } else {
-            type = "question";
-          }
-        } else if (part1 === "room") {
-          type = "room";
-        }
-      }
-
-      console.log("url type:", type);
-      return type;
-    },
     detectIndexType() {
       let selector = this.indexInnerContainerSelector;
       let innerContainer = document.querySelector(selector);

@@ -519,7 +519,7 @@ export default new Vuex.Store({
         if (state.prevRecentNum > state.recentNum) {
           ret = await dispatch("loadHistory");
         }
-        return ret
+        return ret;
       }
     },
     clearRecent({ commit }) {
